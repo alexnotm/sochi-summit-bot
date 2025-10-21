@@ -11,7 +11,7 @@ def get_env(*keys, default=None):
     for k in keys:
         v = os.getenv(k)
         if v:
-            print(f"[ENV] Найдено {k} = '{_short(v)}'")  # логируем первые символы (без полного значения)
+            print(f"[ENV] Найдено {k} = '{_short(v)}'")
             return v
     print(f"[ENV] Не найдено ни одно из ключей: {', '.join(keys)}")
     return default
@@ -39,23 +39,35 @@ async def forward_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
         user = update.message.from_user
         name = user.username or user.full_name or "Без_имени"
-        print(f"[LOG] Входящее сообщение от: {name} (id={user.id}) | type={update.message.effective_attachment}")
+        print(f"[LOG] Входящее сообщение от: {name} (id={user.id})")
 
-        # сначала пересылаем исходное сообщение админу
+        # пересылаем сообщение админу
         await context.bot.forward_message(
             chat_id=ADMIN_ID,
             from_chat_id=update.message.chat_id,
             message_id=update.message.message_id
         )
-        # и отдельным сообщением даём подпись кто это
+
+        # подпись кто написал
         await context.bot.send_message(
             chat_id=ADMIN_ID,
             text=f"📩 Сообщение от @{name} (id: {user.id})"
         )
 
-        # отвечаем пользователю
-        await update.message.reply_text("✅ Спасибо! Ваше сообщение отправлено организаторам Sochi Summit.")
+        # ответ пользователю
+        await update.message.reply_text(
+            "✅ Спасибо! Ваше сообщение отправлено организаторам Sochi Summit."
+        )
     except Exception as e:
         print(f"⚠️ Ошибка при пересылке: {e}")
 
+# --- запуск бота ---
 if __name__ == "__main__":
+    print("🚀 Запуск бота…")
+    print(f"[CHECK] BOT_TOKEN начинается с: '{_short(BOT_TOKEN)}'")
+    print(f"[CHECK] ADMIN_ID = {ADMIN_ID}")
+
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(MessageHandler(filters.ALL, forward_message))
+    print("🤖 Бот запущен. Жду сообщения…")
+    app.run_polling()
