@@ -30,4 +30,19 @@ async def forward_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text=f"📩 Сообщение от @{name} (id: {user.id})"
         )
 
-        #
+        # 3️⃣ Ответ пользователю
+        await update.message.reply_text(
+            "✅ Спасибо! Ваше сообщение отправлено организаторам Sochi Summit."
+        )
+
+    except Exception as e:
+        print(f"⚠️ Ошибка при пересылке: {e}")
+        await update.message.reply_text("⚠️ Произошла ошибка при отправке сообщения. Попробуйте позже.")
+
+# === ЗАПУСК ПРИЛОЖЕНИЯ ===
+if __name__ == "__main__":
+    print("🚀 Бот запускается...")
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(MessageHandler(filters.ALL, forward_message))
+    print("🤖 Бот запущен и ждёт сообщений...")
+    app.run_polling()
